@@ -143,8 +143,22 @@
         const td1 = document.createElement("td");
         td1.className = classe;
         td1.textContent = aStr[i];
+
         td1.onclick = () => {
-          if (!td1.classList.contains("barred")) {
+          if (td1.classList.contains("unite")) return;
+
+          if (td1.classList.contains("barred")) {
+            td1.classList.remove("barred");
+
+            const barreVal = td1.querySelector(".barre-valeur");
+            if (barreVal) barreVal.remove();
+
+            const next = td1.nextSibling;
+            if (next && next.tagName === 'TD') {
+              const cassure = next.querySelector(".cassure");
+              if (cassure) cassure.remove();
+            }
+          } else {
             td1.classList.add("barred");
             const valeur = parseInt(td1.textContent);
             if (!isNaN(valeur) && valeur > 0) {
@@ -162,6 +176,7 @@
             }
           }
         };
+
         row1.appendChild(td1);
 
         const td2 = document.createElement("td");
