@@ -202,14 +202,19 @@
       const userAnswer = Array.from(inputs).map(input => input.value || ' ').join('').trim();
       const correctAnswer = (minuend - subtrahend).toString();
 
+      let bonnesReponses = 0;
       inputs.forEach((input, idx) => {
         const expected = correctAnswer.padStart(inputs.length, ' ')[idx];
         if ((input.value || ' ') === expected) {
           input.className = 'correct';
+          bonnesReponses++;
         } else {
           input.className = 'incorrect';
         }
       });
+
+      const score = Math.round(100 * bonnesReponses / inputs.length);
+      envoyerResultat(score);
     }
 
     function showKeyboard(input) {
@@ -231,6 +236,26 @@
 
     function hideKeyboard() {
       document.getElementById('clavier').style.display = 'none';
+    }
+
+    function envoyerResultat(score) {
+      const animal = currentAnimal;
+      const exercice = "Soustraction posée sans retenue";
+
+      fetch("https://script.google.com/macros/s/AKfycbyeVGX1st4oRsJaQJyHQtDxy2be6lyG0kNZELL-7K94QHP9GiM4Yynv52L0OADt5NDiYg/exec", {
+        method: "POST",
+        body: JSON.stringify({
+          animal: animal,
+          exercice: exercice,
+          score: score
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(r => r.json())
+      .then(data => console.log("Résultat envoyé :", data))
+      .catch(error => console.error("Erreur :", error));
     }
   </script>
 </body>
