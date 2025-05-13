@@ -1,262 +1,63 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Soustraction posée interactive</title>
+  <meta charset="UTF-8">
+  <title>Soustraction posée sans retenue</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 30px; }
-    table { margin: 20px auto; border-collapse: collapse; }
-    td { border: 1px solid #aaa; width: 40px; height: 40px; font-size: 24px; text-align: center; }
-    input { width: 100%; height: 100%; font-size: 24px; text-align: center; border: none; }
-    button, select { margin: 10px; padding: 10px 20px; font-size: 18px; }
-    .correct { background-color: #c8f7c5; }
-    .incorrect { background-color: #f7c5c5; }
-    #app, #exercise { display: none; }
-
-    .centaine { color: blue; }
-    .dizaine { color: orange; }
-    .unite { color: blue; }
-
-    .clavier {
-      position: absolute;
-      background: white;
-      border: 1px solid #ccc;
-      padding: 5px;
-      z-index: 1000;
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 30px;
     }
-
-    .clavier button {
-      width: 40px;
-      height: 40px;
-      margin: 2px;
+    input, button {
+      padding: 10px;
+      margin: 10px;
       font-size: 18px;
     }
   </style>
 </head>
 <body>
-  <div id="login">
-    <h1>Choisis ton animal</h1>
-    <select id="animalSelect">
-      <option disabled selected value="">-- Choisis ton animal --</option>
-      <option>Axolotl</option>
-      <option>Boa</option>
-      <option>Chat</option>
-      <option>Chien</option>
-      <option>Chouette</option>
-      <option>Furet</option>
-      <option>Gecko</option>
-      <option>Grue</option>
-      <option>Koala</option>
-      <option>Lapin</option>
-      <option>Lézard</option>
-      <option>Loup</option>
-      <option>Lynx</option>
-      <option>Oie</option>
-      <option>Otarie</option>
-      <option>Ours</option>
-      <option>Panda</option>
-      <option>Puma</option>
-      <option>Renard</option>
-      <option>Tigre</option>
-    </select>
-    <br><br>
-    <button onclick="startApp()">Commencer</button>
-  </div>
+  <h1>Soustraction posée sans retenue</h1>
 
-  <div id="app">
-    <h2 id="animalDisplay"></h2>
-    <label for="digits">Nombre de chiffres :</label>
-    <select id="digits">
-      <option value="2">2 chiffres</option>
-      <option value="3" selected>3 chiffres</option>
-      <option value="4">4 chiffres</option>
-    </select>
+  <p><strong>Écris ton animal :</strong></p>
+  <input type="text" id="animal" placeholder="ex. Chat, Chien...">
 
-    <br><br>
-    <button onclick="generateProblem()">Nouvelle soustraction</button>
-    <button onclick="checkAnswer()">Vérifier</button>
+  <p><strong>Résous :</strong></p>
+  <p style="font-size: 24px;">74 - 21 = ?</p>
+  <input type="number" id="reponse" placeholder="Ta réponse">
 
-    <div id="exercise">
-      <table>
-        <tbody id="problemTable"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Clavier numérique -->
-  <div id="clavier" class="clavier" style="display:none;">
-    <div>
-      <button onclick="insertNumber(1)">1</button>
-      <button onclick="insertNumber(2)">2</button>
-      <button onclick="insertNumber(3)">3</button><br>
-      <button onclick="insertNumber(4)">4</button>
-      <button onclick="insertNumber(5)">5</button>
-      <button onclick="insertNumber(6)">6</button><br>
-      <button onclick="insertNumber(7)">7</button>
-      <button onclick="insertNumber(8)">8</button>
-      <button onclick="insertNumber(9)">9</button><br>
-      <button onclick="insertNumber(0)">0</button>
-      <button onclick="hideKeyboard()">✕</button>
-    </div>
-  </div>
+  <br>
+  <button id="valider">Valider</button>
+  <p id="message"></p>
 
   <script>
-    let minuend = 0;
-    let subtrahend = 0;
-    let currentAnimal = "";
-    let currentInput = null;
+    document.getElementById('valider').addEventListener('click', () => {
+      const animal = document.getElementById('animal').value.trim();
+      const reponse = parseInt(document.getElementById('reponse').value);
+      const bonneReponse = 53;
+      const score = (reponse === bonneReponse) ? 100 : 0;
 
-    function startApp() {
-      const animal = document.getElementById("animalSelect").value;
-      if (!animal) return alert("Choisis ton animal pour commencer.");
-      currentAnimal = animal;
-      document.getElementById("animalDisplay").textContent = "Animal : " + animal;
-      document.getElementById("login").style.display = "none";
-      document.getElementById("app").style.display = "block";
-    }
-
-    function generateProblem() {
-      const digits = parseInt(document.getElementById('digits').value);
-      const min = Math.pow(10, digits - 1);
-      const max = Math.pow(10, digits) - 1;
-
-      do {
-        minuend = Math.floor(Math.random() * (max - min + 1)) + min;
-        subtrahend = Math.floor(Math.random() * (max - min + 1)) + min;
-      } while (subtrahend > minuend || hasRetenue(minuend, subtrahend));
-
-      displayProblem(minuend, subtrahend);
-    }
-
-    function hasRetenue(a, b) {
-      const aStr = a.toString().padStart(Math.max(a.toString().length, b.toString().length), '0');
-      const bStr = b.toString().padStart(aStr.length, '0');
-      for (let i = aStr.length - 1; i >= 0; i--) {
-        if (parseInt(bStr[i]) > parseInt(aStr[i])) return true;
-      }
-      return false;
-    }
-
-    function getClassByPosition(position, length) {
-      if (position === length - 1) return 'unite';
-      if (position === length - 2) return 'dizaine';
-      if (position === length - 3) return 'centaine';
-      return '';
-    }
-
-    function displayProblem(a, b) {
-      const table = document.getElementById("problemTable");
-      table.innerHTML = "";
-
-      const aStr = a.toString();
-      const bStr = b.toString().padStart(aStr.length, ' ');
-      const answerLength = aStr.length;
-
-      const row1 = document.createElement("tr");
-      const row2 = document.createElement("tr");
-      const row3 = document.createElement("tr");
-
-      row1.appendChild(document.createElement("td"));
-      const minusCell = document.createElement("td");
-      minusCell.textContent = "-";
-      row2.appendChild(minusCell);
-      row3.appendChild(document.createElement("td"));
-
-      for (let i = 0; i < answerLength; i++) {
-        const classe = getClassByPosition(i, answerLength);
-
-        const td1 = document.createElement("td");
-        td1.className = classe;
-        td1.textContent = aStr[i];
-        row1.appendChild(td1);
-
-        const td2 = document.createElement("td");
-        td2.className = classe;
-        td2.textContent = bStr[i] === ' ' ? '' : bStr[i];
-        row2.appendChild(td2);
-
-        const td3 = document.createElement("td");
-        const input = document.createElement("input");
-        input.type = "text";
-        input.maxLength = 1;
-        input.onclick = function() { showKeyboard(this); };
-        td3.appendChild(input);
-        row3.appendChild(td3);
+      if (!animal) {
+        alert("Écris ton animal.");
+        return;
       }
 
-      table.appendChild(row1);
-      table.appendChild(row2);
-      const line = document.createElement("tr");
-      const hr = document.createElement("td");
-      hr.colSpan = answerLength + 1;
-      hr.innerHTML = "<hr>";
-      line.appendChild(hr);
-      table.appendChild(line);
-      table.appendChild(row3);
+      const formURL = 'https://docs.google.com/forms/d/e/1FAIpQLSc8gL0iLCLF1f26l6UMo9FC8W72qn7gh1OfL6TQmtzsq3MZRg/formResponse';
+      const data = new FormData();
 
-      document.getElementById("exercise").style.display = "block";
-    }
+      data.append('entry.2043306579', animal); // champ "Animal"
+      data.append('entry.458588301', score);   // champ "Score"
 
-    function checkAnswer() {
-      const inputs = document.querySelectorAll("#problemTable input");
-      const userAnswer = Array.from(inputs).map(input => input.value || ' ').join('').trim();
-      const correctAnswer = (minuend - subtrahend).toString();
-
-      let bonnesReponses = 0;
-      inputs.forEach((input, idx) => {
-        const expected = correctAnswer.padStart(inputs.length, ' ')[idx];
-        if ((input.value || ' ') === expected) {
-          input.className = 'correct';
-          bonnesReponses++;
-        } else {
-          input.className = 'incorrect';
-        }
+      fetch(formURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: data
+      }).then(() => {
+        document.getElementById('message').innerText = "Résultat envoyé !";
+      }).catch(() => {
+        document.getElementById('message').innerText = "Erreur d'envoi.";
       });
-
-      const score = Math.round(100 * bonnesReponses / inputs.length);
-      envoyerResultat(score);
-    }
-
-    function showKeyboard(input) {
-      currentInput = input;
-      const clavier = document.getElementById('clavier');
-      const rect = input.getBoundingClientRect();
-      clavier.style.left = rect.left + window.scrollX + 'px';
-      clavier.style.top = rect.bottom + window.scrollY + 'px';
-      clavier.style.display = 'block';
-    }
-
-    function insertNumber(n) {
-      if (currentInput) {
-        currentInput.value = n;
-        currentInput.focus();
-      }
-      hideKeyboard();
-    }
-
-    function hideKeyboard() {
-      document.getElementById('clavier').style.display = 'none';
-    }
-
-    function envoyerResultat(score) {
-      const animal = currentAnimal;
-      const exercice = "Soustraction posée sans retenue";
-
-      fetch("https://script.google.com/macros/s/AKfycbyeVGX1st4oRsJaQJyHQtDxy2be6lyG0kNZELL-7K94QHP9GiM4Yynv52L0OADt5NDiYg/exec", {
-        method: "POST",
-        body: JSON.stringify({
-          animal: animal,
-          exercice: exercice,
-          score: score
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      .then(r => r.json())
-      .then(data => console.log("Résultat envoyé :", data))
-      .catch(error => console.error("Erreur :", error));
-    }
+    });
   </script>
 </body>
 </html>
