@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Soustraction posée avec retenue</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 30px; }
+    table { margin: 20px auto; border-collapse: collapse; }
+    td { border: 1px solid #aaa; width: 40px; height: 40px; font-size: 24px; text-align: center; position: relative; }
+    input { width: 100%; height: 100%; font-size: 24px; text-align: center; border: none; }
+    button, select { margin: 10px; padding: 10px 20px; font-size: 18px; }
+    .correct { background-color: #c8f7c5; }
+    .incorrect { background-color: #f7c5c5; }
+
+    .centaine { background-color: #add8e6; }
+    .dizaine { background-color: #ffa500; }
+    .unite { background-color: #ffff66; }
+
+    .barred::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background: black;
+      top: 50%;
+      left: 0;
+      transform: rotate(-45deg);
+      transform-origin: center;
+    }
+
+    .cassure {
+      position: absolute;
+      top: 0;
+      left: 2px;
+      font-size: 24px;
+      color: red;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .barre-valeur {
+      position: absolute;
+      top: -18px;
+      left: 0;
+      right: 0;
+      color: red;
+      font-size: 18px;
+      font-weight: bold;
+      pointer-events: none;
+    }
+
+    .clavier {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 5px;
+      z-index: 1000;
+    }
+
+    .clavier button {
+      width: 40px;
+      height: 40px;
+      margin: 2px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Soustraction posée avec retenue</h1>
+  <button onclick="generateProblem()">Nouvelle soustraction</button>
+  <button onclick="checkAnswer()">Vérifier</button>
+
+  <div id="exercise">
+    <table>
+      <tbody id="problemTable"></tbody>
+    </table>
+  </div>
+
+  <div id="clavier" class="clavier" style="display:none;">
+    <div>
+      <button onclick="insertNumber(1)">1</button>
+      <button onclick="insertNumber(2)">2</button>
+      <button onclick="insertNumber(3)">3</button><br>
+      <button onclick="insertNumber(4)">4</button>
+      <button onclick="insertNumber(5)">5</button>
+      <button onclick="insertNumber(6)">6</button><br>
+      <button onclick="insertNumber(7)">7</button>
+      <button onclick="insertNumber(8)">8</button>
+      <button onclick="insertNumber(9)">9</button><br>
+      <button onclick="insertNumber(0)">0</button>
+      <button onclick="hideKeyboard()">✕</button>
+    </div>
+  </div>
+
+  <script>
+    let minuend = 0;
+    let subtrahend = 0;
+    let currentInput = null;
+
+    function getClassByPosition(position, length) {
+      if (position === length - 1) return 'unite';
+      if (position === length - 2) return 'dizaine';
+      if (position === length - 3) return 'centaine';
+      return '';
+    }
+
+    function generateProblem() {
+      const digits = 3;
+      const min = Math.pow(10, digits - 1);
+      const max = Math.pow(10, digits) - 1;
+
+      do {
+        minuend = Math.floor(Math.random() * (max - min + 1)) + min;
+        subtrahend = Math.floor(Math.random() * (max - min + 1)) + min;
+      } while (subtrahend > minuend);
+
+      displayProblem(minuend, subtrahend);
+    }
+
+    function displayProblem(a, b) {
+      const table = document.getElementById("problemTable");
+      table.innerHTML = "";
+
+      const aStr = a.toString();
+      const bStr = b.toString().padStart(aStr.length, ' ');
+      const answerLength = aStr.length;
+
+      const row1 = document.createElement("tr");
+      const row2 = document.createElement("tr");
+      const row3 = document.createElement("tr");
+
+      row1.appendChild(document.createElement("td"));
+      const minusCell = document.createElement("td");
+      minusCell.textContent = "-";
+      row2.appendChild(minusCell);
+      row3.appendChild(document.createElement("td"));
+
+      for (let i = 0; i < answerLength; i++) {
+        const classe = getClassByPosition(i, answerLength);
+
+        const td1 = document.createElement("td");
+        td1.className = classe;
+        td1.textContent = aStr[i];
+        td1.onclick = () => {
+          if (!td1.classList.contains("barred")) {
+            td1.classList.add("barred");
+
+            const valeur = parseInt(td1.textContent);
+            if (!isNaN(valeur) && valeur > 0) {
+              const spanVal = document.createElement("span");
+              spanVal.className = "barre-valeur";
+              spanVal.textContent = valeur - 1;
+              td1.appendChild(spanVal);
+            }
+
+            const next = td1.nextSibling;
+            if (next && next.tagName === 'TD') {
+              const span = document.createElement("span");
+              span.className = "cassure";
+              span.textContent = "1";
+              next.insertBefore(span, next.firstChild);
+            }
+          }
+        };
+        row1.appendChild(td1);
+
+        const td2 = document.createElement("td");
+        td2.className = classe;
+        td2.textContent = bStr[i] === ' ' ? '' : bStr[i];
+        row2.appendChild(td2);
+
+        const td3 = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.maxLength = 1;
+        input.onclick = function() { showKeyboard(this); };
+        td3.appendChild(input);
+        row3.appendChild(td3);
+      }
+
+      table.appendChild(row1);
+      table.appendChild(row2);
+      const line = document.createElement("tr");
+      const hr = document.createElement("td");
+      hr.colSpan = answerLength + 1;
+      hr.innerHTML = "<hr>";
+      line.appendChild(hr);
+      table.appendChild(line);
+      table.appendChild(row3);
+
+      document.getElementById("exercise").style.display = "block";
+    }
+
+    function checkAnswer() {
+      const inputs = document.querySelectorAll("#problemTable input");
+      const userAnswer = Array.from(inputs).map(input => input.value || ' ').join('').trim();
+      const correctAnswer = (minuend - subtrahend).toString();
+
+      inputs.forEach((input, idx) => {
+        const expected = correctAnswer.padStart(inputs.length, ' ')[idx];
+        if ((input.value || ' ') === expected) {
+          input.className = 'correct';
+        } else {
+          input.className = 'incorrect';
+        }
+      });
+    }
+
+    function showKeyboard(input) {
+      currentInput = input;
+      const clavier = document.getElementById('clavier');
+      const rect = input.getBoundingClientRect();
+      clavier.style.left = rect.left + window.scrollX + 'px';
+      clavier.style.top = rect.bottom + window.scrollY + 'px';
+      clavier.style.display = 'block';
+    }
+
+    function insertNumber(n) {
+      if (currentInput) {
+        currentInput.value = n;
+        currentInput.focus();
+      }
+      hideKeyboard();
+    }
+
+    function hideKeyboard() {
+      document.getElementById('clavier').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
