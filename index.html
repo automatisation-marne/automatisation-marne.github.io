@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Exercices interactifs CE1</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 60px;
+    }
+    h1 {
+      margin-bottom: 40px;
+    }
+    .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    button {
+      font-size: 20px;
+      padding: 12px 24px;
+      min-width: 300px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Exercices interactifs CE1</h1>
+  <div class="menu" id="menuContainer">
+    <p>Chargement du menu...</p>
+  </div>
+
+  <script>
+    fetch('exercices.json')
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById("menuContainer");
+        container.innerHTML = "";
+        data.forEach(exo => {
+          const btn = document.createElement("button");
+          btn.textContent = exo.nom;
+          btn.onclick = () => window.location.href = exo.lien;
+          container.appendChild(btn);
+        });
+      })
+      .catch(() => {
+        document.getElementById("menuContainer").innerHTML = "Impossible de charger les exercices.";
+      });
+  </script>
+</body>
+</html>
