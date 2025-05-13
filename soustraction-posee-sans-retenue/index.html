@@ -215,8 +215,10 @@
 
     function sendToForm(animal, score) {
       const formData = new FormData();
-      formData.append('entry.2043306579', animal);
-      formData.append('entry.458588301', score);
+      formData.append('entry.2043306579', animal); // Animal
+      formData.append('entry.458588301', score);   // Score (1 ou 0)
+      formData.append('entry.1234567890', 'Soustraction posée sans retenue'); // Exercice ← remplacer par ton vrai ID
+
       fetch('https://docs.google.com/forms/d/e/1FAIpQLSc8gL0iLCLF1f26l6UMo9FC8W72qn7gh1OfL6TQmtzsq3MZRg/formResponse', {
         method: 'POST',
         mode: 'no-cors',
