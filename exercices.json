@@ -3,4 +3,9 @@
   "nom": "Soustraction posée sans retenue",
   "lien": "soustraction-posee-sans-retenue/"
 }
+  {
+  "nom": "Soustraction avec retenue",
+  "lien": "soustraction_retenue.html"
+}
+
 ]
