@@ -40,7 +40,7 @@
 
     .barre-valeur {
       position: absolute;
-      top: -18px;
+      top: -20px;
       left: 0;
       right: 0;
       color: red;
@@ -96,6 +96,7 @@
     let minuend = 0;
     let subtrahend = 0;
     let currentInput = null;
+    let currentAnimal = "";
 
     function getClassByPosition(position, length) {
       if (position === length - 1) return 'unite';
@@ -105,6 +106,7 @@
     }
 
     function generateProblem() {
+      currentAnimal = prompt("Quel est ton animal ?") || "Inconnu";
       const digits = 3;
       const min = Math.pow(10, digits - 1);
       const max = Math.pow(10, digits) - 1;
@@ -144,7 +146,6 @@
         td1.onclick = () => {
           if (!td1.classList.contains("barred")) {
             td1.classList.add("barred");
-
             const valeur = parseInt(td1.textContent);
             if (!isNaN(valeur) && valeur > 0) {
               const spanVal = document.createElement("span");
@@ -152,7 +153,6 @@
               spanVal.textContent = valeur - 1;
               td1.appendChild(spanVal);
             }
-
             const next = td1.nextSibling;
             if (next && next.tagName === 'TD') {
               const span = document.createElement("span");
@@ -196,13 +196,33 @@
       const userAnswer = Array.from(inputs).map(input => input.value || ' ').join('').trim();
       const correctAnswer = (minuend - subtrahend).toString();
 
+      let correctCount = 0;
       inputs.forEach((input, idx) => {
         const expected = correctAnswer.padStart(inputs.length, ' ')[idx];
         if ((input.value || ' ') === expected) {
           input.className = 'correct';
+          correctCount++;
         } else {
           input.className = 'incorrect';
         }
+      });
+
+      const score = Math.round((correctCount / inputs.length) * 100);
+
+      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc8gL0iLCLF1f26l6UMo9FC8W72qn7gh1OfL6TQmtzsq3MZRg/formResponse";
+      const animalEntry = "entry.2043306579";
+      const scoreEntry = "entry.458588301";
+      const exerciceEntry = "entry.1442182901";
+
+      fetch(formURL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          [animalEntry]: currentAnimal,
+          [scoreEntry]: score,
+          [exerciceEntry]: "Soustraction posée avec retenue"
+        })
       });
     }
 
