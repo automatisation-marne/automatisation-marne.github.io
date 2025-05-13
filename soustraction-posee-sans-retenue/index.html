@@ -12,6 +12,25 @@
     .correct { background-color: #c8f7c5; }
     .incorrect { background-color: #f7c5c5; }
     #app, #exercise { display: none; }
+
+    .centaine { color: blue; }
+    .dizaine { color: orange; }
+    .unite { color: blue; }
+
+    .clavier {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 5px;
+      z-index: 1000;
+    }
+
+    .clavier button {
+      width: 40px;
+      height: 40px;
+      margin: 2px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
@@ -64,10 +83,28 @@
     </div>
   </div>
 
+  <!-- Clavier numérique -->
+  <div id="clavier" class="clavier" style="display:none;">
+    <div>
+      <button onclick="insertNumber(1)">1</button>
+      <button onclick="insertNumber(2)">2</button>
+      <button onclick="insertNumber(3)">3</button><br>
+      <button onclick="insertNumber(4)">4</button>
+      <button onclick="insertNumber(5)">5</button>
+      <button onclick="insertNumber(6)">6</button><br>
+      <button onclick="insertNumber(7)">7</button>
+      <button onclick="insertNumber(8)">8</button>
+      <button onclick="insertNumber(9)">9</button><br>
+      <button onclick="insertNumber(0)">0</button>
+      <button onclick="hideKeyboard()">✕</button>
+    </div>
+  </div>
+
   <script>
     let minuend = 0;
     let subtrahend = 0;
     let currentAnimal = "";
+    let currentInput = null;
 
     function startApp() {
       const animal = document.getElementById("animalSelect").value;
@@ -100,6 +137,13 @@
       return false;
     }
 
+    function getClassByPosition(position, length) {
+      if (position === length - 1) return 'unite';
+      if (position === length - 2) return 'dizaine';
+      if (position === length - 3) return 'centaine';
+      return '';
+    }
+
     function displayProblem(a, b) {
       const table = document.getElementById("problemTable");
       table.innerHTML = "";
@@ -119,11 +163,15 @@
       row3.appendChild(document.createElement("td"));
 
       for (let i = 0; i < answerLength; i++) {
+        const classe = getClassByPosition(i, answerLength);
+
         const td1 = document.createElement("td");
+        td1.className = classe;
         td1.textContent = aStr[i];
         row1.appendChild(td1);
 
         const td2 = document.createElement("td");
+        td2.className = classe;
         td2.textContent = bStr[i] === ' ' ? '' : bStr[i];
         row2.appendChild(td2);
 
@@ -131,6 +179,7 @@
         const input = document.createElement("input");
         input.type = "text";
         input.maxLength = 1;
+        input.onclick = function() { showKeyboard(this); };
         td3.appendChild(input);
         row3.appendChild(td3);
       }
@@ -161,6 +210,27 @@
           input.className = 'incorrect';
         }
       });
+    }
+
+    function showKeyboard(input) {
+      currentInput = input;
+      const clavier = document.getElementById('clavier');
+      const rect = input.getBoundingClientRect();
+      clavier.style.left = rect.left + window.scrollX + 'px';
+      clavier.style.top = rect.bottom + window.scrollY + 'px';
+      clavier.style.display = 'block';
+    }
+
+    function insertNumber(n) {
+      if (currentInput) {
+        currentInput.value = n;
+        currentInput.focus();
+      }
+      hideKeyboard();
+    }
+
+    function hideKeyboard() {
+      document.getElementById('clavier').style.display = 'none';
     }
   </script>
 </body>
