@@ -9,6 +9,7 @@
     td { border: 1px solid #aaa; width: 40px; height: 40px; font-size: 24px; text-align: center; position: relative; }
     input { width: 100%; height: 100%; font-size: 24px; text-align: center; border: none; }
     button, select { margin: 10px; padding: 10px 20px; font-size: 18px; }
+
     .correct { background-color: #c8f7c5; }
     .incorrect { background-color: #f7c5c5; }
 
@@ -63,12 +64,46 @@
       margin: 2px;
       font-size: 18px;
     }
+
+    #exercise, #boutons { display: none; }
   </style>
 </head>
 <body>
-  <h1>Soustraction posée avec retenue</h1>
-  <button onclick="generateProblem()">Nouvelle soustraction</button>
-  <button onclick="checkAnswer()">Vérifier</button>
+
+  <div id="selection">
+    <h2>Choisis ton animal</h2>
+    <select id="animalSelect">
+      <option value="">-- Sélectionne ton animal --</option>
+      <option value="Axolotl">Axolotl</option>
+      <option value="Boa">Boa</option>
+      <option value="Chat">Chat</option>
+      <option value="Chien">Chien</option>
+      <option value="Chouette">Chouette</option>
+      <option value="Furet">Furet</option>
+      <option value="Gecko">Gecko</option>
+      <option value="Grue">Grue</option>
+      <option value="Koala">Koala</option>
+      <option value="Lapin">Lapin</option>
+      <option value="Lézard">Lézard</option>
+      <option value="Loup">Loup</option>
+      <option value="Lynx">Lynx</option>
+      <option value="Oie">Oie</option>
+      <option value="Otarie">Otarie</option>
+      <option value="Ours">Ours</option>
+      <option value="Panda">Panda</option>
+      <option value="Puma">Puma</option>
+      <option value="Renard">Renard</option>
+      <option value="Tigre">Tigre</option>
+    </select>
+    <br>
+    <button onclick="startExercise()">Valider</button>
+  </div>
+
+  <div id="boutons">
+    <h1>Soustraction posée avec retenue</h1>
+    <button onclick="generateProblem()">Nouvelle soustraction</button>
+    <button onclick="checkAnswer()">Vérifier</button>
+  </div>
 
   <div id="exercise">
     <table>
@@ -93,10 +128,22 @@
   </div>
 
   <script>
+    let currentAnimal = "";
     let minuend = 0;
     let subtrahend = 0;
     let currentInput = null;
-    let currentAnimal = "";
+
+    function startExercise() {
+      const select = document.getElementById("animalSelect");
+      if (!select.value) {
+        alert("Tu dois d'abord choisir ton animal.");
+        return;
+      }
+      currentAnimal = select.value;
+      document.getElementById("selection").style.display = "none";
+      document.getElementById("boutons").style.display = "block";
+      document.getElementById("exercise").style.display = "block";
+    }
 
     function getClassByPosition(position, length) {
       if (position === length - 1) return 'unite';
@@ -106,7 +153,6 @@
     }
 
     function generateProblem() {
-      currentAnimal = prompt("Quel est ton animal ?") || "Inconnu";
       const digits = 3;
       const min = Math.pow(10, digits - 1);
       const max = Math.pow(10, digits) - 1;
@@ -149,10 +195,8 @@
 
           if (td1.classList.contains("barred")) {
             td1.classList.remove("barred");
-
             const barreVal = td1.querySelector(".barre-valeur");
             if (barreVal) barreVal.remove();
-
             const next = td1.nextSibling;
             if (next && next.tagName === 'TD') {
               const cassure = next.querySelector(".cassure");
@@ -202,8 +246,6 @@
       line.appendChild(hr);
       table.appendChild(line);
       table.appendChild(row3);
-
-      document.getElementById("exercise").style.display = "block";
     }
 
     function checkAnswer() {
