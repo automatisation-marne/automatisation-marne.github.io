@@ -198,11 +198,11 @@
 
     function checkAnswer() {
       const inputs = document.querySelectorAll("#problemTable input");
-      const userAnswer = Array.from(inputs).map(input => input.value || ' ').join('').trim();
-      const correctAnswer = (minuend - subtrahend).toString();
+      const userAnswer = Array.from(inputs).map(input => input.value || ' ').join('');
+      const correctAnswer = (minuend - subtrahend).toString().padStart(inputs.length, '0');
 
       inputs.forEach((input, idx) => {
-        const expected = correctAnswer.padStart(inputs.length, ' ')[idx];
+        const expected = correctAnswer[idx];
         if ((input.value || ' ') === expected) {
           input.className = 'correct';
         } else {
@@ -215,9 +215,9 @@
 
     function sendToForm(animal, score) {
       const formData = new FormData();
-      formData.append('entry.2043306579', animal); // Animal
-      formData.append('entry.458588301', score);   // Score
-      formData.append('entry.1442182901', 'Soustraction posée sans retenue'); // Exercice
+      formData.append('entry.2043306579', animal);
+      formData.append('entry.458588301', score);
+      formData.append('entry.1442182901', 'Soustraction posée sans retenue');
 
       fetch('https://docs.google.com/forms/d/e/1FAIpQLSc8gL0iLCLF1f26l6UMo9FC8W72qn7gh1OfL6TQmtzsq3MZRg/formResponse', {
         method: 'POST',
