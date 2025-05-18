@@ -2,10 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Soustraction posée avec retenue</title>
+  <title>Soustraction posée interactive</title>
   <style>
     body { font-family: sans-serif; text-align: center; margin-top: 30px; }
-    table { margin: 20px auto; border-collapse: collapse; }
+    table { margin: 20px auto; border-collapse: collapse; position: relative; }
     td { border: 1px solid #aaa; width: 40px; height: 40px; font-size: 24px; text-align: center; position: relative; }
     input { width: 100%; height: 100%; font-size: 24px; text-align: center; border: none; }
     button, select { margin: 10px; padding: 10px 20px; font-size: 18px; }
@@ -16,18 +16,6 @@
     .centaine { background-color: #add8e6; }
     .dizaine { background-color: #ffa500; }
     .unite { background-color: #ffff66; }
-
-    .barred::after {
-      content: "";
-      position: absolute;
-      width: 100%;
-      height: 2px;
-      background: black;
-      top: 50%;
-      left: 0;
-      transform: rotate(-45deg);
-      transform-origin: center;
-    }
 
     .cassure {
       position: absolute;
@@ -65,7 +53,7 @@
       font-size: 18px;
     }
 
-    #exercise, #boutons { display: none; }
+    #exercise, #controls { display: none; }
   </style>
 </head>
 <body>
@@ -95,14 +83,20 @@
       <option value="Renard">Renard</option>
       <option value="Tigre">Tigre</option>
     </select>
-    <br>
-    <button onclick="startExercise()">Valider</button>
+    <br><br>
+    <button onclick="startExercise()">Choisis</button>
   </div>
 
-  <div id="boutons">
+  <div id="controls">
     <h1>Soustraction posée avec retenue</h1>
     <button onclick="generateProblem()">Nouvelle soustraction</button>
     <button onclick="checkAnswer()">Vérifier</button>
+    <label for="digitSelectLive">Type :</label>
+    <select id="digitSelectLive" onchange="updateDigits()">
+      <option value="2">2 chiffres</option>
+      <option value="3" selected>3 chiffres</option>
+      <option value="4">4 chiffres</option>
+    </select>
   </div>
 
   <div id="exercise">
@@ -111,198 +105,261 @@
     </table>
   </div>
 
-  <div id="clavier" class="clavier" style="display:none;">
-    <div>
-      <button onclick="insertNumber(1)">1</button>
-      <button onclick="insertNumber(2)">2</button>
-      <button onclick="insertNumber(3)">3</button><br>
-      <button onclick="insertNumber(4)">4</button>
-      <button onclick="insertNumber(5)">5</button>
-      <button onclick="insertNumber(6)">6</button><br>
-      <button onclick="insertNumber(7)">7</button>
-      <button onclick="insertNumber(8)">8</button>
-      <button onclick="insertNumber(9)">9</button><br>
-      <button onclick="insertNumber(0)">0</button>
-      <button onclick="hideKeyboard()">✕</button>
-    </div>
-  </div>
+  <div id="clavier" class="clavier" style="display:none;"></div>
 
   <script>
-    let currentAnimal = "";
-    let minuend = 0;
-    let subtrahend = 0;
-    let currentInput = null;
+let currentAnimal = "";
+let digits = 3;
+let minuend = 0;
+let subtrahend = 0;
+let currentInput = null;
 
-    function startExercise() {
-      const select = document.getElementById("animalSelect");
-      if (!select.value) {
-        alert("Tu dois d'abord choisir ton animal.");
-        return;
-      }
-      currentAnimal = select.value;
-      document.getElementById("selection").style.display = "none";
-      document.getElementById("boutons").style.display = "block";
-      document.getElementById("exercise").style.display = "block";
+function startExercise() {
+  const select = document.getElementById("animalSelect");
+  if (!select.value) {
+    alert("Tu dois d'abord choisir ton animal.");
+    return;
+  }
+  currentAnimal = select.value;
+  document.getElementById("selection").style.display = "none";
+  document.getElementById("controls").style.display = "block";
+  document.getElementById("exercise").style.display = "block";
+  generateProblem();
+}
+
+function updateDigits() {
+  digits = parseInt(document.getElementById("digitSelectLive").value);
+  generateProblem();
+}
+
+function generateProblem() {
+  const min = Math.pow(10, digits - 1);
+  const max = Math.pow(10, digits) - 1;
+  do {
+    minuend = Math.floor(Math.random() * (max - min + 1)) + min;
+    subtrahend = Math.floor(Math.random() * (max - min + 1)) + min;
+  } while (subtrahend > minuend);
+  displayProblem(minuend, subtrahend);
+}
+
+function getClassByPosition(pos, len) {
+  if (pos === len - 1) return 'unite';
+  if (pos === len - 2) return 'dizaine';
+  if (pos === len - 3) return 'centaine';
+  return '';
+}
+
+function displayProblem(a, b) {
+  const table = document.getElementById("problemTable");
+  table.innerHTML = "";
+  const aStr = a.toString();
+  const bStr = b.toString().padStart(aStr.length, ' ');
+  const len = aStr.length;
+  const row1 = document.createElement("tr");
+  const row2 = document.createElement("tr");
+  const row3 = document.createElement("tr");
+  row1.appendChild(document.createElement("td"));
+  const minusCell = document.createElement("td");
+  minusCell.textContent = "-";
+  row2.appendChild(minusCell);
+  row3.appendChild(document.createElement("td"));
+
+  for (let i = 0; i < len; i++) {
+    const cls = getClassByPosition(i, len);
+    const td1 = document.createElement("td");
+    td1.className = cls;
+    td1.textContent = aStr[i];
+    td1.onclick = () => handleRetenue(td1);
+
+    const td2 = document.createElement("td");
+    td2.className = cls;
+    td2.textContent = bStr[i] === ' ' ? '' : bStr[i];
+
+    const td3 = document.createElement("td");
+    const input = document.createElement("input");
+    input.type = "text";
+    input.maxLength = 1;
+    input.onclick = function (e) {
+      e.stopPropagation();
+      showKeyboard(this);
+    };
+    td3.appendChild(input);
+
+    row1.appendChild(td1);
+    row2.appendChild(td2);
+    row3.appendChild(td3);
+  }
+  const line = document.createElement("tr");
+  const hr = document.createElement("td");
+  hr.colSpan = len + 1;
+  hr.innerHTML = "<hr>";
+  line.appendChild(hr);
+  table.appendChild(row1);
+  table.appendChild(row2);
+  table.appendChild(line);
+  table.appendChild(row3);
+}
+
+function handleRetenue(td) {
+  if (td.classList.contains("barred")) {
+    td.classList.remove("barred");
+    td.querySelectorAll(".barre-valeur, .cassure, div").forEach(e => e.remove());
+
+    let next = td.nextSibling;
+    while (next && next.tagName === 'TD') {
+      next.querySelectorAll(".cassure").forEach(e => e.remove());
+      next = next.nextSibling;
     }
 
-    function getClassByPosition(position, length) {
-      if (position === length - 1) return 'unite';
-      if (position === length - 2) return 'dizaine';
-      if (position === length - 3) return 'centaine';
-      return '';
+    let prev = td.previousSibling;
+    while (prev && prev.tagName === 'TD') {
+      prev.querySelectorAll(".barre-valeur, div").forEach(e => e.remove());
+      prev.classList.remove("barred");
+      prev = prev.previousSibling;
     }
 
-    function generateProblem() {
-      const digits = 3;
-      const min = Math.pow(10, digits - 1);
-      const max = Math.pow(10, digits) - 1;
+    const row = td.parentElement;
+    row.querySelectorAll("div").forEach(div => div.remove()); // Supprime la barre horizontale
+    return;
+  }
 
-      do {
-        minuend = Math.floor(Math.random() * (max - min + 1)) + min;
-        subtrahend = Math.floor(Math.random() * (max - min + 1)) + min;
-      } while (subtrahend > minuend);
-
-      displayProblem(minuend, subtrahend);
+  const valeur = parseInt(td.textContent);
+  if (valeur === 0 && td.previousSibling) {
+    let prev = td.previousSibling;
+    while (prev && parseInt(prev.textContent) === 0) {
+      prev = prev.previousSibling;
     }
+    if (prev && !prev.classList.contains("barred")) {
+      let current = td;
+      const updateCells = [];
 
-    function displayProblem(a, b) {
-      const table = document.getElementById("problemTable");
-      table.innerHTML = "";
-
-      const aStr = a.toString();
-      const bStr = b.toString().padStart(aStr.length, ' ');
-      const answerLength = aStr.length;
-
-      const row1 = document.createElement("tr");
-      const row2 = document.createElement("tr");
-      const row3 = document.createElement("tr");
-
-      row1.appendChild(document.createElement("td"));
-      const minusCell = document.createElement("td");
-      minusCell.textContent = "-";
-      row2.appendChild(minusCell);
-      row3.appendChild(document.createElement("td"));
-
-      for (let i = 0; i < answerLength; i++) {
-        const classe = getClassByPosition(i, answerLength);
-
-        const td1 = document.createElement("td");
-        td1.className = classe;
-        td1.textContent = aStr[i];
-
-        td1.onclick = () => {
-          if (td1.classList.contains("unite")) return;
-
-          if (td1.classList.contains("barred")) {
-            td1.classList.remove("barred");
-            const barreVal = td1.querySelector(".barre-valeur");
-            if (barreVal) barreVal.remove();
-            const next = td1.nextSibling;
-            if (next && next.tagName === 'TD') {
-              const cassure = next.querySelector(".cassure");
-              if (cassure) cassure.remove();
-            }
-          } else {
-            td1.classList.add("barred");
-            const valeur = parseInt(td1.textContent);
-            if (!isNaN(valeur) && valeur > 0) {
-              const spanVal = document.createElement("span");
-              spanVal.className = "barre-valeur";
-              spanVal.textContent = valeur - 1;
-              td1.appendChild(spanVal);
-            }
-            const next = td1.nextSibling;
-            if (next && next.tagName === 'TD') {
-              const span = document.createElement("span");
-              span.className = "cassure";
-              span.textContent = "1";
-              next.insertBefore(span, next.firstChild);
-            }
-          }
-        };
-
-        row1.appendChild(td1);
-
-        const td2 = document.createElement("td");
-        td2.className = classe;
-        td2.textContent = bStr[i] === ' ' ? '' : bStr[i];
-        row2.appendChild(td2);
-
-        const td3 = document.createElement("td");
-        const input = document.createElement("input");
-        input.type = "text";
-        input.maxLength = 1;
-        input.onclick = function() { showKeyboard(this); };
-        td3.appendChild(input);
-        row3.appendChild(td3);
-      }
-
-      table.appendChild(row1);
-      table.appendChild(row2);
-      const line = document.createElement("tr");
-      const hr = document.createElement("td");
-      hr.colSpan = answerLength + 1;
-      hr.innerHTML = "<hr>";
-      line.appendChild(hr);
-      table.appendChild(line);
-      table.appendChild(row3);
-    }
-
-    function checkAnswer() {
-      const inputs = document.querySelectorAll("#problemTable input");
-      const userAnswer = Array.from(inputs).map(input => input.value || ' ').join('').trim();
-      const correctAnswer = (minuend - subtrahend).toString();
-
-      let correctCount = 0;
-      inputs.forEach((input, idx) => {
-        const expected = correctAnswer.padStart(inputs.length, ' ')[idx];
-        if ((input.value || ' ') === expected) {
-          input.className = 'correct';
-          correctCount++;
-        } else {
-          input.className = 'incorrect';
+      // Marquer tous les 0 jusqu’à prev
+      while (current !== prev) {
+        if (parseInt(current.textContent) === 0) {
+          updateCells.push(current);
         }
-      });
-
-      const score = Math.round((correctCount / inputs.length) * 100);
-
-      const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc8gL0iLCLF1f26l6UMo9FC8W72qn7gh1OfL6TQmtzsq3MZRg/formResponse";
-      const animalEntry = "entry.2043306579";
-      const scoreEntry = "entry.458588301";
-      const exerciceEntry = "entry.1442182901";
-
-      fetch(formURL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          [animalEntry]: currentAnimal,
-          [scoreEntry]: score,
-          [exerciceEntry]: "Soustraction posée avec retenue"
-        })
-      });
-    }
-
-    function showKeyboard(input) {
-      currentInput = input;
-      const clavier = document.getElementById('clavier');
-      const rect = input.getBoundingClientRect();
-      clavier.style.left = rect.left + window.scrollX + 'px';
-      clavier.style.top = rect.bottom + window.scrollY + 'px';
-      clavier.style.display = 'block';
-    }
-
-    function insertNumber(n) {
-      if (currentInput) {
-        currentInput.value = n;
-        currentInput.focus();
+        current = current.previousSibling;
       }
-      hideKeyboard();
-    }
 
-    function hideKeyboard() {
-      document.getElementById('clavier').style.display = 'none';
+      prev.classList.add("barred");
+      const prevVal = parseInt(prev.textContent);
+      const spanPrev = document.createElement("span");
+      spanPrev.className = "barre-valeur";
+      spanPrev.textContent = prevVal - 1;
+      prev.appendChild(spanPrev);
+
+      // Appliquer 9 à tous les 0 entre prev et td
+      updateCells.reverse().forEach(cell => {
+        cell.classList.add("barred");
+        const span = document.createElement("span");
+        span.className = "barre-valeur";
+        span.textContent = "9";
+        cell.appendChild(span);
+      });
+
+      const firstCell = updateCells[0];
+      const next = td.nextSibling;
+      if (next && next.tagName === 'TD') {
+        const cassure = document.createElement("span");
+        cassure.className = "cassure";
+        cassure.textContent = "1";
+        next.insertBefore(cassure, next.firstChild);
+      }
+
+      // Dessiner barre horizontale
+      const barre = document.createElement("div");
+      barre.style.position = "absolute";
+      barre.style.height = "2px";
+      barre.style.background = "black";
+      barre.style.top = td.offsetHeight / 2 + "px";
+      barre.style.left = prev.offsetLeft - td.parentElement.offsetLeft + "px";
+      barre.style.width = (td.offsetLeft - prev.offsetLeft + td.offsetWidth) + "px";
+      barre.style.zIndex = 10;
+      td.parentElement.appendChild(barre);
     }
-  </script>
+  } else if (!isNaN(valeur) && valeur > 0) {
+    td.classList.add("barred");
+    const spanVal = document.createElement("span");
+    spanVal.className = "barre-valeur";
+    spanVal.textContent = valeur - 1;
+    td.appendChild(spanVal);
+    const next = td.nextSibling;
+    if (next && next.tagName === 'TD') {
+      const span = document.createElement("span");
+      span.className = "cassure";
+      span.textContent = "1";
+      next.insertBefore(span, next.firstChild);
+    }
+    const barreDiag = document.createElement("div");
+    barreDiag.style.position = "absolute";
+    barreDiag.style.width = "100%";
+    barreDiag.style.height = "2px";
+    barreDiag.style.background = "black";
+    barreDiag.style.top = "50%";
+    barreDiag.style.left = "0";
+    barreDiag.style.transform = "rotate(-45deg)";
+    barreDiag.style.transformOrigin = "center";
+    td.appendChild(barreDiag);
+  }
+}
+
+
+function checkAnswer() {
+  const inputs = document.querySelectorAll("#problemTable input");
+  const userAnswer = Array.from(inputs).map(i => i.value || '0').join('');
+  const correct = (minuend - subtrahend).toString().padStart(inputs.length, '0');
+  let score = 0;
+  inputs.forEach((input, i) => {
+    if (input.value === correct[i]) {
+      input.className = "correct";
+      score++;
+    } else {
+      input.className = "incorrect";
+    }
+  });
+  const finalScore = Math.round((score / inputs.length) * 100);
+  const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc8gL0iLCLF1f26l6UMo9FC8W72qn7gh1OfL6TQmtzsq3MZRg/formResponse";
+  fetch(formURL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      "entry.2043306579": currentAnimal,
+      "entry.458588301": finalScore,
+      "entry.1442182901": "Soustraction posée avec retenue"
+    })
+  });
+}
+
+function showKeyboard(input) {
+  currentInput = input;
+  const clavier = document.getElementById("clavier");
+  clavier.innerHTML = '';
+  for (let i = 1; i <= 9; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.onclick = () => { input.value = i; hideKeyboard(); };
+    clavier.appendChild(btn);
+    if (i % 3 === 0) clavier.appendChild(document.createElement("br"));
+  }
+  const zero = document.createElement("button");
+  zero.textContent = "0";
+  zero.onclick = () => { input.value = 0; hideKeyboard(); };
+  clavier.appendChild(zero);
+  const close = document.createElement("button");
+  close.textContent = "✕";
+  close.onclick = hideKeyboard;
+  clavier.appendChild(close);
+  const rect = input.getBoundingClientRect();
+  clavier.style.left = rect.left + window.scrollX + 'px';
+  clavier.style.top = rect.bottom + window.scrollY + 'px';
+  clavier.style.display = 'block';
+}
+
+function hideKeyboard() {
+  document.getElementById('clavier').style.display = 'none';
+}
+</script>
+
 </body>
 </html>
