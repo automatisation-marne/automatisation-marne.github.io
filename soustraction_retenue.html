@@ -113,21 +113,21 @@ function generateProblem() {
   const min = Math.pow(10, digits - 1);
   const max = Math.pow(10, digits) - 1;
 
-  do {
+  while (true) {
     minuend = Math.floor(Math.random() * (max - min + 1)) + min;
     subtrahend = Math.floor(Math.random() * (max - min + 1)) + min;
 
     const minStr = minuend.toString().padStart(digits, '0');
 
-    // Filtres sur le minuend uniquement
-    if (
+    // Filtrage strict des zéros dans le minuend
+    const zeroInterdit =
       (digits === 3 && minStr[1] === '0') ||
-      (digits === 4 && (minStr[0] === '0' || minStr[1] === '0'))
-    ) {
-      continue;
-    }
+      (digits === 4 && (minStr[1] === '0' || minStr[2] === '0'));
 
-  } while (subtrahend > minuend);
+    if (subtrahend > minuend || zeroInterdit) continue;
+
+    break; // Sortie de la boucle uniquement si tout est OK
+  }
 
   displayProblem(minuend, subtrahend);
 }
