@@ -18,10 +18,7 @@
     .unite { background-color: #ffff66; }
 
     .cassure {
-      position: absolute;
-      top: 0;
-      left: 2px;
-      font-size: 24px;
+      font-size: 18px; /* Harmonisé avec barre-valeur */
       color: red;
       opacity: 0.7;
       pointer-events: none;
@@ -36,6 +33,11 @@
       font-size: 18px;
       font-weight: bold;
       pointer-events: none;
+
+      /* Bonus ajouté ici pour affichage clair */
+      display: flex;
+      justify-content: center;
+      gap: 2px;
     }
 
     .clavier {
@@ -62,28 +64,12 @@
     <h2>Choisis ton animal</h2>
     <select id="animalSelect">
       <option value="">-- Sélectionne ton animal --</option>
-      <option value="Axolotl">Axolotl</option>
-      <option value="Boa">Boa</option>
-      <option value="Chat">Chat</option>
-      <option value="Chien">Chien</option>
-      <option value="Chouette">Chouette</option>
-      <option value="Furet">Furet</option>
-      <option value="Gecko">Gecko</option>
-      <option value="Grue">Grue</option>
-      <option value="Koala">Koala</option>
-      <option value="Lapin">Lapin</option>
-      <option value="Lézard">Lézard</option>
-      <option value="Loup">Loup</option>
-      <option value="Lynx">Lynx</option>
-      <option value="Oie">Oie</option>
-      <option value="Otarie">Otarie</option>
-      <option value="Ours">Ours</option>
-      <option value="Panda">Panda</option>
-      <option value="Puma">Puma</option>
-      <option value="Renard">Renard</option>
-      <option value="Tigre">Tigre</option>
-    </select>
-    <br><br>
+      <option>Axolotl</option><option>Boa</option><option>Chat</option><option>Chien</option>
+      <option>Chouette</option><option>Furet</option><option>Gecko</option><option>Grue</option>
+      <option>Koala</option><option>Lapin</option><option>Lézard</option><option>Loup</option>
+      <option>Lynx</option><option>Oie</option><option>Otarie</option><option>Ours</option>
+      <option>Panda</option><option>Puma</option><option>Renard</option><option>Tigre</option>
+    </select><br><br>
     <button onclick="startExercise()">Choisis</button>
   </div>
 
@@ -100,26 +86,17 @@
   </div>
 
   <div id="exercise">
-    <table>
-      <tbody id="problemTable"></tbody>
-    </table>
+    <table><tbody id="problemTable"></tbody></table>
   </div>
 
   <div id="clavier" class="clavier" style="display:none;"></div>
 
-  <script>
-let currentAnimal = "";
-let digits = 3;
-let minuend = 0;
-let subtrahend = 0;
-let currentInput = null;
+<script>
+let currentAnimal = "", digits = 3, minuend = 0, subtrahend = 0, currentInput = null;
 
 function startExercise() {
   const select = document.getElementById("animalSelect");
-  if (!select.value) {
-    alert("Tu dois d'abord choisir ton animal.");
-    return;
-  }
+  if (!select.value) return alert("Tu dois d'abord choisir ton animal.");
   currentAnimal = select.value;
   document.getElementById("selection").style.display = "none";
   document.getElementById("controls").style.display = "block";
@@ -152,12 +129,8 @@ function getClassByPosition(pos, len) {
 function displayProblem(a, b) {
   const table = document.getElementById("problemTable");
   table.innerHTML = "";
-  const aStr = a.toString();
-  const bStr = b.toString().padStart(aStr.length, ' ');
-  const len = aStr.length;
-  const row1 = document.createElement("tr");
-  const row2 = document.createElement("tr");
-  const row3 = document.createElement("tr");
+  const aStr = a.toString(), bStr = b.toString().padStart(aStr.length, ' '), len = aStr.length;
+  const row1 = document.createElement("tr"), row2 = document.createElement("tr"), row3 = document.createElement("tr");
   row1.appendChild(document.createElement("td"));
   const minusCell = document.createElement("td");
   minusCell.textContent = "-";
@@ -179,10 +152,7 @@ function displayProblem(a, b) {
     const input = document.createElement("input");
     input.type = "text";
     input.maxLength = 1;
-    input.onclick = function (e) {
-      e.stopPropagation();
-      showKeyboard(this);
-    };
+    input.onclick = e => { e.stopPropagation(); showKeyboard(input); };
     td3.appendChild(input);
 
     row1.appendChild(td1);
@@ -201,107 +171,70 @@ function displayProblem(a, b) {
 }
 
 function handleRetenue(td) {
-  if (td.classList.contains("barred")) {
+  const colIndex = Array.from(td.parentElement.children).indexOf(td);
+  const barreId = "barre-col-" + colIndex;
+  const alreadyBarred = td.classList.contains("barred");
+
+  // 🔄 Annulation : retirer uniquement ce que ce clic a créé
+  if (alreadyBarred) {
+    // Supprime barre-valeur + classe
+    td.querySelectorAll(`[data-origin-col="${colIndex}"]`).forEach(e => e.remove());
     td.classList.remove("barred");
-    td.querySelectorAll(".barre-valeur, .cassure, div").forEach(e => e.remove());
 
-    let next = td.nextSibling;
-    while (next && next.tagName === 'TD') {
-      next.querySelectorAll(".cassure").forEach(e => e.remove());
-      next = next.nextSibling;
+    // Supprime cassure dans la cellule à droite
+    const next = td.nextSibling;
+    if (next && next.tagName === 'TD') {
+      const target = next.querySelector(".barre-valeur") || next;
+      target.querySelectorAll(`.cassure[data-origin-col="${colIndex}"]`).forEach(e => e.remove());
     }
 
-    let prev = td.previousSibling;
-    while (prev && prev.tagName === 'TD') {
-      prev.querySelectorAll(".barre-valeur, div").forEach(e => e.remove());
-      prev.classList.remove("barred");
-      prev = prev.previousSibling;
-    }
+    // Supprimer barre visuelle
+    const barre = td.parentElement.querySelector(`#${barreId}`);
+    if (barre) barre.remove();
 
-    const row = td.parentElement;
-    row.querySelectorAll("div").forEach(div => div.remove()); // Supprime la barre horizontale
     return;
   }
 
+  // ➖ Étape 1 : barrer la cellule cliquée
   const valeur = parseInt(td.textContent);
-  if (valeur === 0 && td.previousSibling) {
-    let prev = td.previousSibling;
-    while (prev && parseInt(prev.textContent) === 0) {
-      prev = prev.previousSibling;
-    }
-    if (prev && !prev.classList.contains("barred")) {
-      let current = td;
-      const updateCells = [];
+  if (isNaN(valeur) || valeur === 0) return;
 
-      // Marquer tous les 0 jusqu’à prev
-      while (current !== prev) {
-        if (parseInt(current.textContent) === 0) {
-          updateCells.push(current);
-        }
-        current = current.previousSibling;
-      }
+  td.classList.add("barred");
 
-      prev.classList.add("barred");
-      const prevVal = parseInt(prev.textContent);
-      const spanPrev = document.createElement("span");
-      spanPrev.className = "barre-valeur";
-      spanPrev.textContent = prevVal - 1;
-      prev.appendChild(spanPrev);
+  const spanVal = document.createElement("span");
+  spanVal.className = "barre-valeur barre-col-" + colIndex;
+  spanVal.setAttribute("data-origin-col", colIndex);
+  spanVal.textContent = valeur - 1;
+  td.appendChild(spanVal);
 
-      // Appliquer 9 à tous les 0 entre prev et td
-      updateCells.reverse().forEach(cell => {
-        cell.classList.add("barred");
-        const span = document.createElement("span");
-        span.className = "barre-valeur";
-        span.textContent = "9";
-        cell.appendChild(span);
-      });
+  // ➕ Étape 2 : ajouter la cassure dans la valeur modifiée ou cellule suivante
+  const next = td.nextSibling;
+  if (next && next.tagName === 'TD') {
+    const target = next.querySelector(".barre-valeur") || next;
 
-      const firstCell = updateCells[0];
-      const next = td.nextSibling;
-      if (next && next.tagName === 'TD') {
-        const cassure = document.createElement("span");
-        cassure.className = "cassure";
-        cassure.textContent = "1";
-        next.insertBefore(cassure, next.firstChild);
-      }
+    const cassure = document.createElement("span");
+    cassure.className = "cassure cassure-col-" + colIndex;
+    cassure.setAttribute("data-origin-col", colIndex);
+    cassure.textContent = "1";
 
-      // Dessiner barre horizontale
-      const barre = document.createElement("div");
-      barre.style.position = "absolute";
-      barre.style.height = "2px";
-      barre.style.background = "black";
-      barre.style.top = td.offsetHeight / 2 + "px";
-      barre.style.left = prev.offsetLeft - td.parentElement.offsetLeft + "px";
-      barre.style.width = (td.offsetLeft - prev.offsetLeft + td.offsetWidth) + "px";
-      barre.style.zIndex = 10;
-      td.parentElement.appendChild(barre);
-    }
-  } else if (!isNaN(valeur) && valeur > 0) {
-    td.classList.add("barred");
-    const spanVal = document.createElement("span");
-    spanVal.className = "barre-valeur";
-    spanVal.textContent = valeur - 1;
-    td.appendChild(spanVal);
-    const next = td.nextSibling;
-    if (next && next.tagName === 'TD') {
-      const span = document.createElement("span");
-      span.className = "cassure";
-      span.textContent = "1";
-      next.insertBefore(span, next.firstChild);
-    }
-    const barreDiag = document.createElement("div");
-    barreDiag.style.position = "absolute";
-    barreDiag.style.width = "100%";
-    barreDiag.style.height = "2px";
-    barreDiag.style.background = "black";
-    barreDiag.style.top = "50%";
-    barreDiag.style.left = "0";
-    barreDiag.style.transform = "rotate(-45deg)";
-    barreDiag.style.transformOrigin = "center";
-    td.appendChild(barreDiag);
+    // ✅ Ajout à gauche du chiffre
+    target.insertBefore(cassure, target.firstChild);
   }
+
+  // ✏️ Étape 3 : barre diagonale
+  const barreDiag = document.createElement("div");
+  barreDiag.id = "barre-col-" + colIndex;
+  barreDiag.style.position = "absolute";
+  barreDiag.style.width = "100%";
+  barreDiag.style.height = "2px";
+  barreDiag.style.background = "black";
+  barreDiag.style.top = "50%";
+  barreDiag.style.left = "0";
+  barreDiag.style.transform = "rotate(-45deg)";
+  barreDiag.style.transformOrigin = "center";
+  td.appendChild(barreDiag);
 }
+
 
 
 function checkAnswer() {
@@ -310,18 +243,12 @@ function checkAnswer() {
   const correct = (minuend - subtrahend).toString().padStart(inputs.length, '0');
   let score = 0;
   inputs.forEach((input, i) => {
-    if (input.value === correct[i]) {
-      input.className = "correct";
-      score++;
-    } else {
-      input.className = "incorrect";
-    }
+    input.className = input.value === correct[i] ? "correct" : "incorrect";
+    if (input.value === correct[i]) score++;
   });
   const finalScore = Math.round((score / inputs.length) * 100);
-  const formURL = "https://docs.google.com/forms/d/e/1FAIpQLSc8gL0iLCLF1f26l6UMo9FC8W72qn7gh1OfL6TQmtzsq3MZRg/formResponse";
-  fetch(formURL, {
-    method: "POST",
-    mode: "no-cors",
+  fetch("https://docs.google.com/forms/d/e/1FAIpQLSc8gL0iLCLF1f26l6UMo9FC8W72qn7gh1OfL6TQmtzsq3MZRg/formResponse", {
+    method: "POST", mode: "no-cors",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       "entry.2043306579": currentAnimal,
