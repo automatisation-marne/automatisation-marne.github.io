@@ -74,6 +74,7 @@
   </div>
 
   <div id="controls">
+<h2 id="animalTitle"></h2>
     <h1>Soustraction posée avec retenue</h1>
     <button onclick="generateProblem()">Nouvelle soustraction</button>
     <button onclick="checkAnswer()">Vérifier</button>
@@ -98,6 +99,7 @@ function startExercise() {
   const select = document.getElementById("animalSelect");
   if (!select.value) return alert("Tu dois d'abord choisir ton animal.");
   currentAnimal = select.value;
+document.getElementById("animalTitle").textContent = currentAnimal;
   document.getElementById("selection").style.display = "none";
   document.getElementById("controls").style.display = "block";
   document.getElementById("exercise").style.display = "block";
