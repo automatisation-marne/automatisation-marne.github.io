@@ -112,12 +112,26 @@ function updateDigits() {
 function generateProblem() {
   const min = Math.pow(10, digits - 1);
   const max = Math.pow(10, digits) - 1;
+
   do {
     minuend = Math.floor(Math.random() * (max - min + 1)) + min;
     subtrahend = Math.floor(Math.random() * (max - min + 1)) + min;
+
+    const minStr = minuend.toString().padStart(digits, '0');
+
+    // Filtres sur le minuend uniquement
+    if (
+      (digits === 3 && minStr[1] === '0') ||
+      (digits === 4 && (minStr[0] === '0' || minStr[1] === '0'))
+    ) {
+      continue;
+    }
+
   } while (subtrahend > minuend);
+
   displayProblem(minuend, subtrahend);
 }
+
 
 function getClassByPosition(pos, len) {
   if (pos === len - 1) return 'unite';
@@ -177,51 +191,52 @@ function handleRetenue(td) {
 
   // 🔄 Annulation : retirer uniquement ce que ce clic a créé
   if (alreadyBarred) {
-    // Supprime barre-valeur + classe
     td.querySelectorAll(`[data-origin-col="${colIndex}"]`).forEach(e => e.remove());
     td.classList.remove("barred");
 
-    // Supprime cassure dans la cellule à droite
     const next = td.nextSibling;
     if (next && next.tagName === 'TD') {
       const target = next.querySelector(".barre-valeur") || next;
       target.querySelectorAll(`.cassure[data-origin-col="${colIndex}"]`).forEach(e => e.remove());
     }
 
-    // Supprimer barre visuelle
     const barre = td.parentElement.querySelector(`#${barreId}`);
     if (barre) barre.remove();
 
     return;
   }
 
-  // ➖ Étape 1 : barrer la cellule cliquée
   const valeur = parseInt(td.textContent);
   if (isNaN(valeur) || valeur === 0) return;
 
   td.classList.add("barred");
 
+  // ➕ Barre-valeur (nouvelle valeur écrite au-dessus)
   const spanVal = document.createElement("span");
   spanVal.className = "barre-valeur barre-col-" + colIndex;
   spanVal.setAttribute("data-origin-col", colIndex);
   spanVal.textContent = valeur - 1;
   td.appendChild(spanVal);
 
-  // ➕ Étape 2 : ajouter la cassure dans la valeur modifiée ou cellule suivante
+  // ➕ Cassure dans la cellule suivante (ciblée sur la barre-valeur si présente)
   const next = td.nextSibling;
   if (next && next.tagName === 'TD') {
-    const target = next.querySelector(".barre-valeur") || next;
+    let target = next.querySelector(".barre-valeur");
+
+    if (!target) {
+      target = next;
+    }
 
     const cassure = document.createElement("span");
     cassure.className = "cassure cassure-col-" + colIndex;
     cassure.setAttribute("data-origin-col", colIndex);
     cassure.textContent = "1";
 
-    // ✅ Ajout à gauche du chiffre
+    // Insertion juste avant le contenu de la barre-valeur ou au début de la cellule
     target.insertBefore(cassure, target.firstChild);
   }
 
-  // ✏️ Étape 3 : barre diagonale
+  // ➖ Barre diagonale sur la cellule cliquée
   const barreDiag = document.createElement("div");
   barreDiag.id = "barre-col-" + colIndex;
   barreDiag.style.position = "absolute";
@@ -234,7 +249,6 @@ function handleRetenue(td) {
   barreDiag.style.transformOrigin = "center";
   td.appendChild(barreDiag);
 }
-
 
 
 function checkAnswer() {
