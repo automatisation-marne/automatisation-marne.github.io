@@ -145,13 +145,9 @@
       }
 
       // Affichage de l’indice cohérent
-      if (borneMin >= borneMax - 1) {
-        const uniquePrix = borneMin + 1;
-        document.getElementById("indice").textContent =
-          `🕵️ Il ne reste qu’un seul prix possible : ${uniquePrix} €`;
-      } else {
-        document.getElementById("indice").textContent =
-          `💡 Indice : ${borneMin} < ? < ${borneMax}`;
+     document.getElementById("indice").textContent =
+  `💡 Indice : ${borneMin} < ? < ${borneMax}`;
+
       }
 
       document.getElementById("essais").textContent = `Essais : ${compteur}`;
