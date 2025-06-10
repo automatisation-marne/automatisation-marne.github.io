@@ -132,10 +132,10 @@
 
       if (valeur < prixJuste) {
         document.getElementById("message").textContent = "🔺 C’est plus !";
-        if (valeur >= borneMin) borneMin = valeur + 1;
+        if (valeur >= borneMin) borneMin = valeur;
       } else if (valeur > prixJuste) {
         document.getElementById("message").textContent = "🔻 C’est moins !";
-        if (valeur <= borneMax) borneMax = valeur - 1;
+        if (valeur <= borneMax) borneMax = valeur;
       } else {
         document.getElementById("message").textContent = `🎉 Bravo ! Le juste prix était ${prixJuste} € !`;
         document.getElementById("indice").textContent = "";
