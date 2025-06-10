@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Le Juste Prix CE1</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 32px;
+    }
+
+    #objet, #indice {
+      font-size: 24px;
+      margin: 10px;
+    }
+
+    #prixPropose {
+      font-size: 28px;
+      text-align: center;
+      width: 200px;
+      padding: 10px;
+      margin: 10px;
+    }
+
+    #clavier button {
+      font-size: 24px;
+      width: 60px;
+      height: 60px;
+      margin: 5px;
+    }
+
+    #message {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+
+    #essais {
+      margin-top: 10px;
+      font-size: 20px;
+    }
+
+    #reset {
+      margin-top: 20px;
+      font-size: 18px;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Le Juste Prix</h1>
+  <div id="objet"></div>
+  <div id="indice"></div>
+  <input id="prixPropose" readonly placeholder="?" />
+
+  <div id="clavier">
+    <div>
+      <button onclick="ajouterChiffre('1')">1</button>
+      <button onclick="ajouterChiffre('2')">2</button>
+      <button onclick="ajouterChiffre('3')">3</button>
+    </div>
+    <div>
+      <button onclick="ajouterChiffre('4')">4</button>
+      <button onclick="ajouterChiffre('5')">5</button>
+      <button onclick="ajouterChiffre('6')">6</button>
+    </div>
+    <div>
+      <button onclick="ajouterChiffre('7')">7</button>
+      <button onclick="ajouterChiffre('8')">8</button>
+      <button onclick="ajouterChiffre('9')">9</button>
+    </div>
+    <div>
+      <button onclick="effacer()">⌫</button>
+      <button onclick="ajouterChiffre('0')">0</button>
+      <button onclick="verifierPrix()">OK</button>
+    </div>
+  </div>
+
+  <div id="message"></div>
+  <div id="essais"></div>
+  <button id="reset" onclick="nouvellePartie()">Nouvelle partie</button>
+
+  <script>
+    const objets = [
+      "un vélo", "un cartable", "une montre", "un jeu vidéo", "un ballon", "un livre", 
+      "un ordinateur", "une paire de chaussures", "un fauteuil", "un lit", "une trottinette", 
+      "un casque audio", "un drone", "un bureau", "une lampe", "un appareil photo", 
+      "une valise", "une guitare", "une console", "une imprimante"
+    ];
+
+    let prixJuste, compteur, nomObjet;
+    let borneMin, borneMax;
+
+    function nouvellePartie() {
+      prixJuste = Math.floor(Math.random() * 999) + 1;
+      compteur = 0;
+      nomObjet = objets[Math.floor(Math.random() * objets.length)];
+      borneMin = 1;
+      borneMax = 999;
+      document.getElementById("objet").textContent = `💰 Combien coûte ${nomObjet} ?`;
+      document.getElementById("indice").textContent = `💡 Indice : ${borneMin} < ? < ${borneMax}`;
+      document.getElementById("message").textContent = "";
+      document.getElementById("essais").textContent = "";
+      document.getElementById("prixPropose").value = "";
+    }
+
+    function ajouterChiffre(chiffre) {
+      const champ = document.getElementById("prixPropose");
+      if (champ.value.length < 3) {
+        champ.value += chiffre;
+      }
+    }
+
+    function effacer() {
+      const champ = document.getElementById("prixPropose");
+      champ.value = champ.value.slice(0, -1);
+    }
+
+  function verifierPrix() {
+  const champ = document.getElementById("prixPropose");
+  const valeur = parseInt(champ.value);
+  if (isNaN(valeur)) {
+    document.getElementById("message").textContent = "⛔️ Entrez un prix.";
+    return;
+  }
+
+  compteur++;
+  if (valeur < prixJuste) {
+    document.getElementById("message").textContent = "🔺 C’est plus !";
+    if (valeur >= borneMin) borneMin = valeur + 1;
+  } else if (valeur > prixJuste) {
+    document.getElementById("message").textContent = "🔻 C’est moins !";
+    if (valeur <= borneMax) borneMax = valeur - 1;
+  } else {
+    document.getElementById("message").textContent = `🎉 Bravo ! Le juste prix était ${prixJuste} € !`;
+  }
+
+  // ✅ Affichage de l’indice
+  if (borneMin >= borneMax - 1) {
+    document.getElementById("indice").textContent = `🕵️ Il ne reste qu’un seul prix possible !`;
+  } else {
+    document.getElementById("indice").textContent = `💡 Indice : ${borneMin} < ? < ${borneMax}`;
+  }
+
+  document.getElementById("essais").textContent = `Essais : ${compteur}`;
+  champ.value = "";
+}
+
+
+
+    nouvellePartie();
+  </script>
+</body>
+</html>
