@@ -120,7 +120,7 @@
       champ.value = champ.value.slice(0, -1);
     }
 
-  function verifierPrix() {
+function verifierPrix() {
   const champ = document.getElementById("prixPropose");
   const valeur = parseInt(champ.value);
   if (isNaN(valeur)) {
@@ -129,6 +129,7 @@
   }
 
   compteur++;
+
   if (valeur < prixJuste) {
     document.getElementById("message").textContent = "🔺 C’est plus !";
     if (valeur >= borneMin) borneMin = valeur + 1;
@@ -137,13 +138,19 @@
     if (valeur <= borneMax) borneMax = valeur - 1;
   } else {
     document.getElementById("message").textContent = `🎉 Bravo ! Le juste prix était ${prixJuste} € !`;
+    document.getElementById("indice").textContent = "";
   }
 
-  // ✅ Affichage de l’indice
-  if (borneMin >= borneMax - 1) {
-    document.getElementById("indice").textContent = `🕵️ Il ne reste qu’un seul prix possible !`;
-  } else {
-    document.getElementById("indice").textContent = `💡 Indice : ${borneMin} < ? < ${borneMax}`;
+  // ✅ Affichage de l’indice uniquement si ce n’est pas gagné
+  if (valeur !== prixJuste) {
+    if (borneMin >= borneMax - 1) {
+      const uniquePrix = borneMin + 1;
+      document.getElementById("indice").textContent =
+        `🕵️ Il ne reste qu’un seul prix possible : ${uniquePrix} €`;
+    } else {
+      document.getElementById("indice").textContent =
+        `💡 Indice : ${borneMin} < ? < ${borneMax}`;
+    }
   }
 
   document.getElementById("essais").textContent = `Essais : ${compteur}`;
