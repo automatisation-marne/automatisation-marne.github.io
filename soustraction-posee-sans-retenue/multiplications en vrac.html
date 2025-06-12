@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Entraînement Multiplications</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #calcul {
+      font-size: 32px;
+      margin: 20px;
+    }
+    #resultat {
+      font-size: 28px;
+      height: 40px;
+      width: 120px;
+      text-align: center;
+      margin-bottom: 10px;
+      pointer-events: none;
+    }
+    #clavier {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    #clavier button {
+      font-size: 24px;
+      padding: 15px;
+    }
+    #valider {
+      font-size: 24px;
+      padding: 10px 30px;
+    }
+    #compteur {
+      font-size: 20px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tables de Multiplication (1 à 5)</h1>
+  <div id="calcul">Clique sur "Valider" pour commencer</div>
+  <input type="text" id="resultat" inputmode="none" readonly>
+  <div id="clavier">
+    <button onclick="ajouterChiffre(1)">1</button>
+    <button onclick="ajouterChiffre(2)">2</button>
+    <button onclick="ajouterChiffre(3)">3</button>
+    <button onclick="ajouterChiffre(4)">4</button>
+    <button onclick="ajouterChiffre(5)">5</button>
+    <button onclick="ajouterChiffre(6)">6</button>
+    <button onclick="ajouterChiffre(7)">7</button>
+    <button onclick="ajouterChiffre(8)">8</button>
+    <button onclick="ajouterChiffre(9)">9</button>
+    <button onclick="effacer()">⌫</button>
+    <button onclick="ajouterChiffre(0)">0</button>
+    <button onclick="valider()">Valider</button>
+  </div>
+
+  <div id="compteur">Bonnes réponses : 0</div>
+
+  <script>
+    let a, b, bonneReponse = 0;
+
+    function nouvelleQuestion() {
+      a = Math.floor(Math.random() * 5) + 1;
+      b = Math.floor(Math.random() * 10) + 1;
+      document.getElementById("calcul").textContent = `${a} × ${b} = ?`;
+      document.getElementById("resultat").value = "";
+    }
+
+    function ajouterChiffre(chiffre) {
+      const champ = document.getElementById("resultat");
+      champ.value += chiffre;
+    }
+
+    function effacer() {
+      const champ = document.getElementById("resultat");
+      champ.value = champ.value.slice(0, -1);
+    }
+
+    function valider() {
+      const reponse = parseInt(document.getElementById("resultat").value);
+      if (reponse === a * b) {
+        bonneReponse++;
+        document.getElementById("compteur").textContent = `Bonnes réponses : ${bonneReponse}`;
+        nouvelleQuestion();
+      } else {
+        alert("❌ Mauvaise réponse, réessaie !");
+        document.getElementById("resultat").value = "";
+      }
+    }
+
+    // Lancer automatiquement une première question
+    window.onload = nouvelleQuestion;
+  </script>
+
+</body>
+</html>
