@@ -7,6 +7,10 @@
     "nom": "Soustraction posée avec retenue",
     "lien": "/soustraction_retenue.html"
   },
+   {
+    "nom": "Multiplications en vrac !",
+    "lien": "/multiplications_en_vrac"
+  },
   {
     "nom": "Le juste prix",
     "lien": "/justeprix.html"
